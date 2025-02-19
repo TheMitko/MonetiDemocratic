@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="bg">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Европа</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div style="position: absolute; top: 30%; left:82.7%; display: none;" class="pawn-sender" id="pawnSenderPanel">
+        <svg x="900" y="240" width="250" height="250">
+            <defs>
+                <linearGradient id="senderGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                    <stop offset="0%" style="stop-color:#00FF40" />
+                    <stop offset="100%" style="stop-color:#05718c" />
+                </linearGradient>
+            </defs>
+            
+            <!-- Background rectangle -->
+            <rect x="0" y="0" width="260" height="250" fill="url(#senderGradient)" 
+                  stroke="#ccc" stroke-width="2" rx="10" ry="10"/>
+            
+            <!-- Text -->
+            <text x="125" y="40" fill="white" text-anchor="middle" style="font-size: 19px;text-align:center;">
+                <tspan x="125" dy="0">Изберете брой пулове</tspan>
+                <tspan x="125" dy="25">за изпращане на опонента:</tspan>
+            </text>
+            
+            <!-- Input field for pawns -->
+            <foreignObject x="33" y="80" width="184" height="40">
+                <input type="number" id="pawnAmount" min="1" 
+                       style="width: 183.8px; height: 40px; font-size: 24px; border: 2px solid #ccc; border-radius: 10px; padding: 0 10px;"/>
+            </foreignObject>
+            
+            <!-- New text for receiver selection -->
+            <text x="125" y="140" fill="white" text-anchor="middle" style="font-size: 19px;text-align:center;">Изберете получател:</text>
+            
+            <!-- Dropdown for receiver selection -->
+            <foreignObject x="33" y="150" width="184" height="40">
+                <select id="receiverSelect" style="width: 183.8px; height: 40px; font-size: 16px; border: 2px solid #ccc; border-radius: 10px; padding: 0 10px;">
+                    <option value="player1" style="color: blue;">Player 1</option>
+                    <option value="player2" style="color: green;">Player 2</option>
+                    <option value="player3" style="color: red;">Player 3</option>
+                    <option value="player4" style="color: orange;">Player 3</option>
+
+                </select>
+            </foreignObject>
+            
+            <!-- Send button -->
+            <g onclick="handlePawnSend()"
+               onmousedown="this.querySelector('rect').style.filter='brightness(0.8)'" 
+               onmouseup="this.querySelector('rect').style.filter='none'"
+               onmouseleave="this.querySelector('rect').style.filter='none'"
+               style="cursor: pointer">
+                <rect x="50" y="200" width="150" height="46" fill="url(#senderGradient)" 
+                  stroke="#ccc" stroke-width="2" rx="10" ry="10"/>
+                <text x="125" y="230" fill="white" text-anchor="middle" style="font-size: 24px;">
+                    Изпрати
+                </text>
+            </g>
+            
+            <!-- Close button -->
+            <g onclick="document.getElementById('pawnSenderPanel').style.display='none'"
+               onmousedown="this.querySelector('circle').style.filter='brightness(0.8)'" 
+               onmouseup="this.querySelector('circle').style.filter='none'"
+               onmouseleave="this.querySelector('circle').style.filter='none'"
+               style="cursor: pointer">
+                <circle cx="240" cy="20" r="15" fill="#ff4444" 
+                        stroke="#ccc" stroke-width="2"/>
+                <text x="240" y="25" fill="white" text-anchor="middle" 
+                      dominant-baseline="middle" style="font-size: 24px;">×</text>
+            </g>
+        </svg>
+    </div>
+        <div class="dropdown" style="position: absolute; right: 35px; top: 20px;">
+            <svg class="dropbtn" style="width: 200px; height: 50px;" onclick="document.querySelector('.dropdown-content').style.display = 'block'">
+                <defs>
+                    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#00FF40;stop-opacity:1" />
+                        <stop offset="100%" style="stop-color:#05718c;stop-opacity:1" />
+                    </linearGradient>
+                </defs>
+                <rect x="0" y="0" width="100%" height="100%" fill="url(#bgGradient)" stroke="#ccc" stroke-width="2" rx="10" ry="10"/>
+                <text x="22" y="35" fill="#ffffff" style="font-size: 24px; font-weight: bold; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1));">
+                    Дипломация
+                </text>
+            </svg>
+            <div class="dropdown-content" style="display: none; position: absolute; right: 0; background-color: #f9f9f9; min-width: 200px; box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2); z-index: 1; border-radius: 10px;">
+                <a href="#" class="send-pawns"onclick="this.parentElement.style.display='block'" style="color: white; padding: 4px; text-decoration: none; display: block; background: linear-gradient(to right, #00FF40, #05718c); font-size: 18px; font-weight: bold; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border-radius: 10px;">Изпратете монети</a>
+            </div>
+        </div>
+    
+
+
+    <div class="location" style="top:0%">
+        <div id="pawns-count" class="pawns-count">
+            <p id="player1-name" class="player1-names"></p> <!-- Here should be the player 1 name -->
+            <p id="player1-capitals-info" class="player1-names">столици: <span id="player1-capitals" class="player1-capitals">4</span></p> <!-- Here should be the player 1 capitals -->
+            <p id="player1-info" class="player1-names">пулове: <span id="player1-pawns" class="player1-pawns">0</span></p> <!-- Here should be the player 1 pawns -->
+        </div>
+        <div id="capitals-count" class="capitals-count">
+            <p id="player2-name" class="player2-names"></p> <!-- Here should be the player 2 name -->
+            <p id="player2-capitals-info" class="player2-names">столици: <span id="player2-capitals" class="player2-capitals">4</span></p> <!-- Here should be the player 2 capitals -->
+            <p id="player2-info" class="player2-names">пулове: <span id="player2-pawns" class="player2-pawns">0</span></p> <!-- Here should be the player 2 pawns -->
+        </div>
+        <div id="player3-panel" class="capitals-count">
+            <p id="player3-name" class="player3-names"></p>
+            <p id="player3-capitals-info" class="player3-names">столици: <span id="player3-capitals" class="player3-capitals">3</span></p>
+            <p id="player3-info" class="player3-names">пулове: <span id="player3-pawns" class="player3-pawns">0</span></p>
+        </div>
+        <div id="player4-panel" class="capitals-count">
+            <p id="player4-name" class="player4-names"></p>
+            <p id="player4-capitals-info" class="player4-names">столици: <span id="player4-capitals" class="player4-capitals">3</span></p>
+            <p id="player4-info" class="player4-names">пулове: <span id="player4-pawns" class="player4-pawns">0</span></p>
+        </div>
+    
+
+    <div id="info-panel">
+        <div id="player1-capital-info"></div>
+        <div id="player2-capital-info"></div>
+      </div>
+    </div>
+      
+    <svg id="button-container" style="position: absolute; top: 91%; left: 0.5%; width: 250px; height: 60px;">
+        <defs>
+            <linearGradient id="buttonGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" style="stop-color:#00FF40"/>
+                <stop offset="100%" style="stop-color:#05718c"/>
+            </linearGradient>
+        </defs>
+        <rect id="endPlacingButton" x="0" y="0" width="100%" height="100%" rx="10" ry="10"
+            style="fill:url(#buttonGradient); stroke:#ccc; stroke-width:2; cursor:pointer; filter:drop-shadow(0 4px 8px rgba(0,0,0,0.1))"/>
+        <text x="50%" y="50%" text-anchor="middle" dominant-baseline="middle"
+            style="font-size:24px; fill:#333; pointer-events:none;">Край на поставяне</text>
+    </svg>
+
+    <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <image xlink:href="Europe.jpg" width="1200" height="800"></image>
+        <g id="connections"></g> 
+        <g id="points"></g>
+        <g id="pawns"></g>
+    </svg>
+
+    <script src="data_europe.js"></script>
+    <script src="script_europe_4.js"></script>
+</body>
+
+</html>
