@@ -1739,7 +1739,8 @@ function handlePawnSend() {
   if (parseInt(amount) === parseInt(playerPawnsCount[currentPlayer])) {
     const confirmLose = confirm("Ако изпратите всички пулове, ще загубите играта. Сигурни ли сте?");
     if (confirmLose) {
-      window.location.href = currentPlayer === 1 ? "player2_win.html" : "player1_win.html";
+       playerPawnsCount[currentPlayer] = 0;
+      switchTurn();
       return;
     } else {
       input.value = '';
