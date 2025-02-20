@@ -1714,7 +1714,7 @@ function handlePawnSend() {
   const selectedReceiver = receiverSelect.value;
 
   // Convert the player index based on the string from the dropdown
-  const receiverIndex = parseInt(selectedReceiver.split('player')[1]);
+  const receiverIndex = parseInt(selectedReceiver.split('Player ')[1]);
 
   if (isNaN(amount) || amount <= 0) {
     alert("Моля въведете валиден брой пулове.");
@@ -1756,5 +1756,7 @@ function handlePawnSend() {
   DemocraticReciever = receiverIndex; // Set the receiver here
   const NameCurrent = getCurrentPlayerName();
   alert(NameCurrent + " трябва да избере " + amount + " пула, които да предаде");
+  console.log("The reciever index is " + receiverIndex);
+  console.log("The reciever value is " + selectedReceiver);
   SendPawnsPanel.style.display = 'none';
 }
