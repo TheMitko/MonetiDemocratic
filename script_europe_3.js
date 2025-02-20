@@ -1668,7 +1668,7 @@ function handlePawnSend() {
   const selectedReceiver = receiverSelect.value;
 
   // Convert the player index based on the string from the dropdown
-  const receiverIndex = parseInt(selectedReceiver.split('player')[1]);
+  const receiverIndex = parseInt(selectedReceiver.split('Player ')[1]);;
 
   if (isNaN(amount) || amount <= 0) {
     alert("Моля въведете валиден брой пулове.");
@@ -1693,8 +1693,7 @@ function handlePawnSend() {
   if (parseInt(amount) === parseInt(playerPawnsCount[currentPlayer])) {
     const confirmLose = confirm("Ако изпратите всички пулове, ще загубите играта. Сигурни ли сте?");
     if (confirmLose) {
-      window.location.href = currentPlayer === 1 ? "player2_win.html" : "player1_win.html";
-      return;
+      switchTurn();
     } else {
       input.value = '';
       SendPawnsPanel.style.display = 'none';
