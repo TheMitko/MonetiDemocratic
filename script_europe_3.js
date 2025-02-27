@@ -309,6 +309,7 @@ function selectPoint(pointId) {
           DemocraticallySentPawns += 1;
           pawnsOnPoints[pointId].owner = DemocraticReciever;
           updatePointDisplay(pointId);
+          ignoreFirst = true;
           if (DemocraticallySentPawns === DemocraticSendingAmmount) {
             DemocraticReciever = null;
             DemocraticSendingAmmount = 0;
@@ -1613,103 +1614,117 @@ function nullifyPlayerCountries(playerId) {
   players[playerId].countries = [];
 }
 
-document.querySelector('.dropbtn').addEventListener('click',function(){
-  console.log("CLICKED!");
+// Event listener for dropdown button
+document.querySelector('.dropbtn').addEventListener('click', function() {
+  console.log(`Diplomacy button clicked by Player ${currentPlayer}`);
   const sendPawnsElement = document.querySelector('.send-pawns');
   if (sendPawnsElement) {
-    console.log("There is such an element");
-    sendPawnsElement.style.display = 'block'; ///It still doesn't get displayed
+      sendPawnsElement.style.display = 'block';
   }
-})
-
-document.querySelector('.send-pawns').addEventListener('click', function(e) {
-  document.querySelector('.send-pawns').style.display = 'none';
-    e.preventDefault(); // Prevent default link behavior
-    if(movingHasStarted) {
-        alert("Не можете да пращате пулове, след като вече сте започнали хода си.");
-        return;
-    }
-    if(!isMovingPhase) {
-        alert("Не можете да пращате пулове преди да приключи разполагането на пулове.");
-        return;
-    }
-    const SendPawnsPanel=document.querySelector('.pawn-sender');
-    SendPawnsPanel.style.display = 'block';
-    selectedStartPoint = null; 
 });
 
+// Event listener for send pawns option
+document.querySelector('.send-pawns').addEventListener('click', function(e) {
+  e.preventDefault(); // Prevent default link behavior
+  document.querySelector('.send-pawns').style.display = 'none';
+  if (movingHasStarted) {
+      alert("Не можете да пращате пулове, след като вече сте започнали хода си.");
+      return;
+  }
+  if (!isMovingPhase) {
+      alert("Не можете да пращате пулове преди да приключи разполагането на пулове.");
+      return;
+  }
+  const SendPawnsPanel = document.querySelector('.pawn-sender');
+  populateReceiverDropdown(currentPlayer);
+  SendPawnsPanel.style.display = 'block';
+  selectedStartPoint = null;
+});
 
+// Populate receiver dropdown with organized logs
 function populateReceiverDropdown(currentPlayerIndex) {
-    const receiverSelect = document.getElementById('receiverSelect');
-    receiverSelect.innerHTML = ''; // Clear existing options
-    
-    playerNames.forEach((name, index) => {
-        // Skip adding the current player to the options
-        if (index + 1 === currentPlayerIndex) return;
-        
-        const option = document.createElement('option');
-        option.value = `Player ${index + 1}`;
-        // If the name is empty, use "Player {index}"
-        option.textContent = name || `Играч ${index + 1}`;
-        option.style.color = ["blue", "green", "red"][index]; // Assign colors based on index
-        receiverSelect.appendChild(option);
-    });
+  console.log(`--- Populating Receiver Dropdown for Player ${currentPlayerIndex} ---`);
+  const receiverSelect = document.getElementById('receiverSelect');
+  if (!receiverSelect) {
+      console.error('Error: receiverSelect element not found');
+      return;
+  }
+  receiverSelect.innerHTML = ''; // Clear existing options
+  console.log(`Player Names: ${JSON.stringify(playerNames)}`);
+
+  playerNames.forEach((name, index) => {
+      if (index + 1 === currentPlayerIndex) {
+          console.log(`Skipping current player: Player ${index + 1} (${name || `Играч ${index + 1}`})`);
+          return;
+      }
+      const option = document.createElement('option');
+      option.value = index + 1;
+      option.textContent = name || `Играч ${index + 1}`;
+      const colors = ["blue", "green", "red", "orange"];
+      option.style.color = colors[index] || "black";
+      receiverSelect.appendChild(option);
+      console.log(`Added receiver option: Player ${index + 1} (${option.textContent})`);
+  });
+  console.log(`--- Dropdown Population Complete ---`);
 }
 
-// Call this function when initializing your game or when player names are known
-// Here, currentPlayerIndex is the index of the current player (1-based)
-populateReceiverDropdown(currentPlayer);
-
+// Handle pawn sending with organized logs
 function handlePawnSend() {
+  console.log(`--- Handling Pawn Send for Player ${currentPlayer} ---`);
   const input = document.getElementById('pawnAmount');
   const amount = parseInt(input.value);
   const SendPawnsPanel = document.querySelector('.pawn-sender');
   const receiverSelect = document.getElementById('receiverSelect');
   const selectedReceiver = receiverSelect.value;
+  const receiverIndex = parseInt(selectedReceiver); // Adjusted to directly parse the value
 
-  // Convert the player index based on the string from the dropdown
-  const receiverIndex = parseInt(selectedReceiver.split('Player ')[1]);;
+  console.log(`Selected Receiver: Player ${receiverIndex}`);
+  console.log(`Amount Entered: ${amount}`);
 
   if (isNaN(amount) || amount <= 0) {
-    alert("Моля въведете валиден брой пулове.");
-    input.value = '';
-    return;
-  }
-  
-  if (amount > playerPawnsCount[currentPlayer]) {
-    alert("Нямате достатъчно пулове за изпращане.");
-    input.value = '';
-    return;
+      alert("Моля въведете валиден брой пулове.");
+      console.log(`Invalid amount entered: ${amount}`);
+      input.value = '';
+      return;
   }
 
-  // Check if the player is trying to send pawns to themselves
-  // This check is now redundant since the current player isn't in the dropdown
-  // but left as an extra safeguard
+  if (amount > playerPawnsCount[currentPlayer]) {
+      alert("Нямате достатъчно пулове за изпращане.");
+      console.log(`Insufficient pawns: Player ${currentPlayer} has ${playerPawnsCount[currentPlayer]}, tried to send ${amount}`);
+      input.value = '';
+      return;
+  }
+
   if (receiverIndex === currentPlayer) {
-    alert("Не можете да изпратите пулове на себе си.");
-    return;
+      alert("Не можете да изпратите пулове на себе си.");
+      console.log(`Attempted to send to self: Player ${currentPlayer}`);
+      return;
   }
 
   if (parseInt(amount) === parseInt(playerPawnsCount[currentPlayer])) {
-    const confirmLose = confirm("Ако изпратите всички пулове, ще загубите играта. Сигурни ли сте?");
-    if (confirmLose) {
-      playerPawnsCount[currentPlayer] = 0;
-      switchTurn();
-      return;
-    } else {
-      input.value = '';
-      SendPawnsPanel.style.display = 'none';
-      return;
-    }
+      const confirmLose = confirm("Ако изпратите всички пулове, ще загубите играта. Сигурни ли сте?");
+      if (confirmLose) {
+          console.log(`Player ${currentPlayer} chose to lose by sending all pawns (${amount}) to Player ${receiverIndex}`);
+          window.location.href = currentPlayer === 1 ? "player2_win.html" : "player1_win.html";
+          return;
+      } else {
+          console.log(`Player ${currentPlayer} canceled sending all pawns`);
+          input.value = '';
+          SendPawnsPanel.style.display = 'none';
+          return;
+      }
   }
 
-  playerPawnsCount[currentPlayer] -= parseInt(amount);
-  playerPawnsCount[receiverIndex] = parseInt(amount) + parseInt(playerPawnsCount[receiverIndex]);
+  // Update pawn counts
+  playerPawnsCount[currentPlayer] = parseInt(playerPawnsCount[currentPlayer]) + amount;
+  playerPawnsCount[receiverIndex] = parseInt(playerPawnsCount[receiverIndex]) - amount;
   updatePlayerInfoDisplay();
   DemocraticSending = true;
   DemocraticSendingAmmount = amount;
-  DemocraticReciever = receiverIndex; // Set the receiver here
+  DemocraticReciever = receiverIndex;
   const NameCurrent = getCurrentPlayerName();
-  alert(NameCurrent + " трябва да избере " + amount + " пула, които да предаде");
+  alert(`${NameCurrent} трябва да избере ${amount} пула, които да предаде`);
   SendPawnsPanel.style.display = 'none';
+  console.log(`Pawn send completed: Player ${currentPlayer} sent ${amount} pawns to Player ${receiverIndex}`);
+  console.log(`--- Pawn Send Complete ---`);
 }
