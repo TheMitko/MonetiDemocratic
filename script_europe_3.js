@@ -1,11 +1,11 @@
-const playersCountries = JSON.parse(localStorage.getItem("playersCountries")) || { 1: [], 2: [], 3: [] };
+const playersCountries = JSON.parse(localStorage.getItem("playersCountries")) || { 1: [], 2: [], 3: [], 4: [] };
 const gameData = JSON.parse(localStorage.getItem("gameData")) || { pawnsCount: 3, playerNames: [] };
 const playerNames = gameData.playerNames;
 const SkipPawns = gameData.skipPawns;
 
 // Променлива за следене на броя пулове на всеки играч
 const maxPawnsPerPlayer = gameData.pawnsCount;
-const playerPawnsCount = { 1: maxPawnsPerPlayer, 2: maxPawnsPerPlayer, 3: maxPawnsPerPlayer };
+const playerPawnsCount = { 1: maxPawnsPerPlayer, 2: maxPawnsPerPlayer, 3: maxPawnsPerPlayer, 4: maxPawnsPerPlayer };
 
 let selectedStartPoint = null;
 let isMovingPhase = false; // Следене на фазата на преместване
@@ -47,15 +47,16 @@ let ignoreFirst = false;
 let movingHasStarted=false;
 
 const players = {
-  1: { color: "blue", remainingPawnsToMove: gameData.pawnsCount, remainingPawns: gameData.pawnsCount, countries: playersCountries[1], capitalsNum: 3 },
-  2: { color: "green", remainingPawnsToMove: gameData.pawnsCount, remainingPawns: gameData.pawnsCount, countries: playersCountries[2], capitalsNum: 3 },
-  3: { color: "red", remainingPawnsToMove: gameData.pawnsCount, remainingPawns: gameData.pawnsCount, countries: playersCountries[3], capitalsNum: 3 }
+  1: { color: "blue", remainingPawnsToMove: gameData.pawnsCount, remainingPawns: gameData.pawnsCount, countries: playersCountries[1], capitalsNum: 2 },
+  2: { color: "green", remainingPawnsToMove: gameData.pawnsCount, remainingPawns: gameData.pawnsCount, countries: playersCountries[2], capitalsNum: 2 },
+  3: { color: "red", remainingPawnsToMove: gameData.pawnsCount, remainingPawns: gameData.pawnsCount, countries: playersCountries[3], capitalsNum: 2 },
+  4: { color: "orange", remainingPawnsToMove: gameData.pawnsCount, remainingPawns: gameData.pawnsCount, countries: playersCountries[4], capitalsNum: 2 }
 };
 
-let beingAttacked = [false, false, false];
-let punishPoints = [0, 0, 0];
-let bannedPlayers = [false, false, false];
-let TheAttacker = [0, 0, 0]; // New array to store who's attacking each player
+let beingAttacked = [false, false, false, false];
+let punishPoints = [0, 0, 0, 0];
+let bannedPlayers = [false, false, false, false];
+let TheAttacker = [0, 0, 0, 0]; // New array to store who's attacking each player
 
 function highlightConnections(pointId) {
   const point = pointsData.find(p => p.id === pointId);
@@ -132,12 +133,12 @@ function changeCountryOwnership(country, newOwner) {
     if (point.country === country) {
       const circle = document.getElementById(point.id);
       if (circle) {
-        circle.setAttribute("fill", newOwner === 1 ? players[1].color : (newOwner === 2 ? players[2].color : players[3].color));
+        circle.setAttribute("fill", newOwner === 1 ? players[1].color : (newOwner === 2 ? players[2].color : (newOwner === 3 ? players[3].color : players[4].color)));
         console.log(`Point ${point.id} colored ${circle.getAttribute("fill")}`);
       }
       point.OriginalOwner = newOwner; // Update the original owner for future reference
       players[newOwner].countries.push(country);
-      ///(`Играч ${newOwner} взе контрол над ${country}`);
+      console.log(`Играч ${newOwner} взе контрол над ${country}`);
     }
   });
 
@@ -151,6 +152,7 @@ function updateCapitalsCount() {
   document.getElementById("player1-capitals-info").innerHTML = `столици: <span id="player1-capitals" class="player1-capitals">${players[1].capitalsNum}</span>`;
   document.getElementById("player2-capitals-info").innerHTML = `столици: <span id="player2-capitals" class="player2-capitals">${players[2].capitalsNum}</span>`;
   document.getElementById("player3-capitals-info").innerHTML = `столици: <span id="player3-capitals" class="player3-capitals">${players[3].capitalsNum}</span>`;
+  document.getElementById("player4-capitals-info").innerHTML = `столици: <span id="player4-capitals" class="player4-capitals">${players[4].capitalsNum}</span>`;
 }
 
 function getPointCountry(pointId) {
@@ -165,6 +167,7 @@ function updatePlayerPawnsCount() {
   document.getElementById("player1-pawns").textContent = playerPawnsCount[1];
   document.getElementById("player2-pawns").textContent = playerPawnsCount[2];
   document.getElementById("player3-pawns").textContent = playerPawnsCount[3];
+  document.getElementById("player4-pawns").textContent = playerPawnsCount[4];
 }
 
 // Обновяване на текста в таблото с имената на играчите
@@ -172,12 +175,15 @@ function updatePlayerInfoDisplay() {
   document.getElementById("player1-name").textContent = playerNames[0] || 'Играч 1';
   document.getElementById("player2-name").textContent = playerNames[1] || 'Играч 2';
   document.getElementById("player3-name").textContent = playerNames[2] || 'Играч 3';
+  document.getElementById("player4-name").textContent = playerNames[3] || 'Играч 4';
   document.getElementById("player1-capitals-info").innerHTML = `столици: <span id="player1-capitals" class="player1-capitals">${players[1].capitalsNum}</span>`;
   document.getElementById("player1-info").innerHTML = `пулове: <span id="player1-pawns" class="player1-пawns">${playerPawnsCount[1]}</span>`;
   document.getElementById("player2-capitals-info").innerHTML = `столици: <span id="player2-capitals" class="player2-capitals">${players[2].capitalsNum}</span>`;
   document.getElementById("player2-info").innerHTML = `пулове: <span id="player2-pawns" class="player2-пawns">${playerPawnsCount[2]}</span>`;
   document.getElementById("player3-capitals-info").innerHTML = `столици: <span id="player3-capitals" class="player3-capitals">${players[3].capitalsNum}</span>`;
   document.getElementById("player3-info").innerHTML = `пулове: <span id="player3-pawns" class="player3-пawns">${playerPawnsCount[3]}</span>`;
+  document.getElementById("player4-capitals-info").innerHTML = `столици: <span id="player4-capitals" class="player4-capitals">${players[4].capitalsNum}</span>`;
+  document.getElementById("player4-info").innerHTML = `пулове: <span id="player4-pawns" class="player4-пawns">${playerPawnsCount[4]}</span>`;
 }
 
 updatePlayerInfoDisplay(); // Извикване на функцията за първоначално обновяване на дисплея
@@ -191,7 +197,7 @@ function getCurrentPlayerName() {
 makeConnectionsBidirectional(pointsData);
 
 // Инициализиране на предупреждение за уведомяване на играчите за старта на разпределянето на пуловете
-alert("Започва разполагането на пулове за двама играчи!");
+alert("Започва разполагането на пулове за четирима играчи!");
 
 // Създаване на карта за следене на пуловете на всяка точка
 const pawnsOnPoints = {};
@@ -200,13 +206,14 @@ const pointNames = {}; // Създаване на обект за имена н�
 function checkCountryOwnership(point) {
   const country = point.country;
   if (country) {
-    if (players[1].countries.includes(country) && playerPawnsCount[1]>0) {
+    if (players[1].countries.includes(country)&& playerPawnsCount[1]>0) {
       return 1; // Player 1 owns this country
     } else if (players[2].countries.includes(country)&& playerPawnsCount[2]>0) {
       return 2; // Player 2 owns this country
     } else if (players[3].countries.includes(country)&& playerPawnsCount[3]>0) {
-      console.log("I guess player 3 has" + playerPawnsCount[3] + "pawns")
       return 3; // Player 3 owns this country
+    } else if (players[4].countries.includes(country)&& playerPawnsCount[4]>0) {
+      return 4; // Player 4 owns this country
     }
   }
   return null; // No player owns this point's country
@@ -288,7 +295,7 @@ function unhighlightPointsForCapture() {
     pawnsOnPoints[pointId].owner = pawnsInfoBeforeHighlight[pointId].owner;
     if (skippingEnded) {
       Y = false;
-      ///("A point has been unhighlighted " + pointId);
+      console.log("A point has been unhighlighted " + pointId);
       updatePointDisplay(pointId);
 
       skippingEnded = false;
@@ -300,16 +307,15 @@ function unhighlightPointsForCapture() {
 
 // Обработчик на събития за избиране на точка
 function selectPoint(pointId) {
-
   if(DemocraticSending)
     {
       if(DemocraticallySentPawns<=DemocraticSendingAmmount)
       {
+        ignoreFirst = true;
         if (pawnsOnPoints[pointId].owner === currentPlayer && pawnsOnPoints[pointId].pawns !== 0) {
           DemocraticallySentPawns += 1;
           pawnsOnPoints[pointId].owner = DemocraticReciever;
           updatePointDisplay(pointId);
-          ignoreFirst = true;
           if (DemocraticallySentPawns === DemocraticSendingAmmount) {
             DemocraticReciever = null;
             DemocraticSendingAmmount = 0;
@@ -346,7 +352,6 @@ function selectPoint(pointId) {
       updatePlayerInfoDisplay();
       updatePointDisplay(pointId);
       PunishRemove = false;
-      
       movePawns(selectedStartPoint, DestinationPoint);
     }
     else if (pawnsOnPoints[pointId].pawns < 1) {
@@ -397,7 +402,7 @@ function selectPoint(pointId) {
           updatePointDisplay(PointWithAlreadyAttackedPawns);
 
           alert("Изберете точка за кацане");
-          ///(`Опции за кацане: ${dinamicCaptureOptions}`);
+          console.log(`Опции за кацане: ${dinamicCaptureOptions}`);
           captureIsHappening = true;
         }
         else {
@@ -443,7 +448,7 @@ function selectPoint(pointId) {
   }
 
   if (startSentOver) {
-    ///(`startSentOver`);
+    console.log(`startSentOver`);
     if (pawnsSentOver <= pawnsGrrr) {
 
       if (pawnsOnPoints[pointId].owner === defender && pawnsOnPoints[pointId].pawns !== 0) {
@@ -480,7 +485,7 @@ function selectPoint(pointId) {
     }
   }
   if (pawnsChoiceStarted) {
-    ///("Играч"+pawnsInfoBeforeHighlight[pointId].owner+"явно не е атакуван")
+    console.log("Играч"+pawnsInfoBeforeHighlight[pointId].owner+"явно не е атакуван")
     if (beingAttacked[pawnsInfoBeforeHighlight[pointId].owner] === true && TheAttacker[pawnsInfoBeforeHighlight[pointId].owner] !== currentPlayer) {
       PointWithAlreadyAttackedPawns = pointId;
       if (!confirmAttackOnAlreadyAttackedPlayer()) {
@@ -492,7 +497,7 @@ function selectPoint(pointId) {
 
         captureIsHappening = false;
         dinamicCaptureOptions = [];
-        ///(`verka`);
+        console.log(`verka`);
         skippingEnded = true;
         unhighlightPointsForCapture();
         Y = true;
@@ -532,14 +537,14 @@ function selectPoint(pointId) {
             }
     
             pawnsOnPoints[ConqueredCapital.id].pawns += pawnsToBePlaced;
-            ///("Trqbva da se postavqt" + pawnsToBePlaced);
-            ///("atacker sega ima" + playerPawnsCount[atacker]);
+            console.log("Trqbva da se postavqt" + pawnsToBePlaced);
+            console.log("atacker sega ima" + playerPawnsCount[atacker]);
     
             let AddittionalSumThing = parseInt(playerPawnsCount[atacker]) + parseInt(pawnsToBePlaced);
-            ///("sumata" + parseInt(AddittionalSumThing));
+            console.log("sumata" + parseInt(AddittionalSumThing));
             playerPawnsCount[atacker] = parseInt(AddittionalSumThing);
     
-            ///("veche ima" + playerPawnsCount[atacker]);
+            console.log("veche ima" + playerPawnsCount[atacker]);
             updatePlayerPawnsCount();
             updatePointDisplay(ConqueredCapital.id);
             alert("Изберете " + pawnsGrrr + " пула, които да предадете!");
@@ -596,7 +601,7 @@ function selectPoint(pointId) {
           updatePointDisplay(pointId);
 
           alert("Изберете точка за кацане");
-          ///(`Опции за кацане: ${dinamicCaptureOptions}`);
+          console.log(`Опции за кацане: ${dinamicCaptureOptions}`);
           captureIsHappening = true;
         }
         else {
@@ -653,7 +658,7 @@ function selectPoint(pointId) {
           updatePointDisplay(pointId);
 
           alert("Изберете точка за кацане");
-          ///(`Опции за кацане: ${dinamicCaptureOptions}`);
+          console.log(`Опции за кацане: ${dinamicCaptureOptions}`);
           captureIsHappening = true;
         }
         else {
@@ -705,9 +710,9 @@ function selectPoint(pointId) {
           circle.setAttribute("r", point.capital ? 22 : 10);
         }
         else { circle.setAttribute("r", point.capital ? 22 : 7); }
-        circle.setAttribute("fill", point.country ? (checkCountryOwnership(point) === 1 ? players[1].color : (checkCountryOwnership(point) === 2 ? players[2].color : players[3].color)) : "gray");
+        circle.setAttribute("fill", point.country ? (checkCountryOwnership(point) === 1 ? players[1].color : (checkCountryOwnership(point) === 2 ? players[2].color : (checkCountryOwnership(point) === 3 ? players[3].color : players[4].color))) : "gray");
         console.log(`Point ${point.id} colored ${circle.getAttribute("fill")}`);
-        ///(checkCountryOwnership(point));
+        console.log(checkCountryOwnership(point));
       }
     });
 
@@ -732,7 +737,7 @@ function selectPoint(pointId) {
         if (pawnsOnPoints[connectionId].pawns !== 0 && pawnsOnPoints[connectionId].owner !== currentPlayer && connectionId !== pointId && connectionId !== DestinationPoint && !oldPawnIds.includes(connectionId) /* 555 */) {
           doubleSkipPossibility = true;
 
-          ///(connectionId + "e опция за прескачане");
+          console.log(connectionId + "e опция за прескачане");
         }
       }
     });
@@ -757,13 +762,13 @@ function selectPoint(pointId) {
 
       captureIsHappening = false;
       dinamicCaptureOptions = [];
-      ///(`verka`);
+      console.log(`verka`);
       skippingEnded = true;
       unhighlightPointsForCapture();
       Y = true;
     }
 
-    ///("X=" + X + " and Y=" + Y);
+    console.log("X=" + X + " and Y=" + Y);
 
     if (X && Y) {
       if (isACapitalBeingAttacked && checkCapitalsOwnership(currentPlayer).underAttack) {
@@ -800,14 +805,14 @@ function selectPoint(pointId) {
         }
 
         pawnsOnPoints[ConqueredCapital.id].pawns += pawnsToBePlaced;
-        ///("Trqbva da se postavqt" + pawnsToBePlaced);
-        ///("atacker sega ima" + playerPawnsCount[atacker]);
+        console.log("Trqbva da se postavqt" + pawnsToBePlaced);
+        console.log("atacker sega ima" + playerPawnsCount[atacker]);
 
         let AddittionalSumThing = parseInt(playerPawnsCount[atacker]) + parseInt(pawnsToBePlaced);
-        ///("sumata" + parseInt(AddittionalSumThing));
+        console.log("sumata" + parseInt(AddittionalSumThing));
         playerPawnsCount[atacker] = parseInt(AddittionalSumThing);
 
-        ///("veche ima" + playerPawnsCount[atacker]);
+        console.log("veche ima" + playerPawnsCount[atacker]);
         updatePlayerPawnsCount();
         updatePointDisplay(ConqueredCapital.id);
         alert("Изберете " + pawnsGrrr + " пула, които да предадете!");
@@ -827,13 +832,13 @@ function selectPoint(pointId) {
     }
   }
   else if(ignoreFirst === false) {
-    ///(`else`);
+    console.log(`else`);
     if (captureOptions.length > 0) {
       handleCaptureChoice(pointId);
       return;
     }
 
-    ///(`Точка избрана: ${pointId}`);
+    console.log(`Точка избрана: ${pointId}`);
     if (!isMovingPhase) {
       placePawns(pointId);
     } else {
@@ -848,8 +853,7 @@ function selectPoint(pointId) {
           return;
         }
         const point = pointsData.find(p => p.id === destinationPoint);
-
-        if (((pawnsOnPoints[destinationPoint].pawns !== 0) && beingAttacked[pawnsOnPoints[destinationPoint].owner] === true && pawnsOnPoints[destinationPoint].owner !== currentPlayer) || (point.capital === true && point.OriginalOwner != currentPlayer && beingAttacked[point.OriginalOwner] === true)) {
+        if (((pawnsOnPoints[destinationPoint].pawns !== 0) && beingAttacked[pawnsOnPoints[destinationPoint].owner] === true && pawnsOnPoints[destinationPoint].owner !== currentPlayer) || (point.capital===true && point.OriginalOwner!=currentPlayer && beingAttacked[point.OriginalOwner] === true)) {
           if (!confirmAttackOnAlreadyAttackedPlayer()) {
             selectedStartPoint = null;
             destinationPoint = null;
@@ -901,12 +905,14 @@ function placePawns(pointId) {
     player = players[2];
   } else if (pointColor === "red") {
     player = players[3];
+  } else if (pointColor === "orange") {
+    player = players[4];
   } else {
     alert("Тази точка не принадлежи на никого.");
     return;
   }
 
-  const playerName = playerNames[player === players[1] ? 0 : (player === players[2] ? 1 : 2)] || `Играч ${player === players[1] ? 1 : (player === players[2] ? 2 : 3)}`;
+  const playerName = playerNames[player === players[1] ? 0 : (player === players[2] ? 1 : (player === players[3] ? 2 : 3))] || `Играч ${player === players[1] ? 1 : (player === players[2] ? 2 : (player === players[3] ? 3 : 4))}`;
 
   const maxPawnsToPlace = player.remainingPawns;
   const numPawns = parseInt(prompt(`Колко пулове искате да поставите? (Max: ${maxPawnsToPlace})
@@ -930,7 +936,7 @@ function placePawns(pointId) {
   pawnsOnPoints[pointId].pawns += numPawns;
   player.remainingPawns -= numPawns;
   updatePlayerPawnsCount();
-  pawnsOnPoints[pointId].owner = player === players[1] ? 1 : (player === players[2] ? 2 : 3);
+  pawnsOnPoints[pointId].owner = player === players[1] ? 1 : (player === players[2] ? 2 : (player === players[3] ? 3 : 4));
 
   updatePointDisplay(pointId);
 
@@ -962,17 +968,16 @@ function movePawns(startPointId, destinationPointId) {
     return;
   }
 
-  movingHasStarted = true; 
+  movingHasStarted = true;
 
   const numPawns = 1; // Може да се премести само един пул наведнъж
-
 
   // Here's where pawns are removed from the starting point
   startingPointId = startPointId;
   pawnsOnPoints[startPointId].pawns -= numPawns;
   if (pawnsOnPoints[startPointId].pawns === 0) {
     pawnsOnPoints[startPointId].owner = null;
-    ///(`Пулове на точка ${startPointId} бяха преместени.`);
+    console.log(`Пулове на точка ${startPointId} бяха преместени.`);
   }
 
   if (!pawnsOnPoints[destinationPointId]) {
@@ -1040,7 +1045,7 @@ function movePawns(startPointId, destinationPointId) {
         playerPawnsCount[opponent] -= pawnsOnPoints[destinationPointId].pawns;
         updatePlayerPawnsCount();
         pawnsOnPoints[destinationPointId] = { pawns: 0, owner: null };
-        ///(`Пулове на точка ${destinationPointId} бяха изтрити, защото бяха прескочени.`);
+        console.log(`Пулове на точка ${destinationPointId} бяха изтрити, защото бяха прескочени.`);
         updatePointDisplay(destinationPointId);
 
         alert("Изберете точка за кацане");
@@ -1105,14 +1110,14 @@ function movePawns(startPointId, destinationPointId) {
         return;
       }
 
-      ///("Trqbva da se postavqt" + pawnsToBePlaced);
-      ///("atacker sega ima" + playerPawnsCount[atacker]);
+      console.log("Trqbva da se postavqt" + pawnsToBePlaced);
+      console.log("atacker sega ima" + playerPawnsCount[atacker]);
 
       let AddittionalSumThing = parseInt(playerPawnsCount[atacker]) + parseInt(pawnsToBePlaced);
-      ///("sumata" + parseInt(AddittionalSumThing));
+      console.log("sumata" + parseInt(AddittionalSumThing));
       playerPawnsCount[atacker] = parseInt(AddittionalSumThing);
 
-      ///("veche ima" + playerPawnsCount[atacker]);
+      console.log("veche ima" + playerPawnsCount[atacker]);
       updatePlayerPawnsCount();
       updatePointDisplay(ConqueredCapital.id);
 
@@ -1170,9 +1175,9 @@ function handleCaptureChoice(pointId) {
     const point = pointsData.find(p => p.id === option);
     if (circle && point) {
       circle.setAttribute("r", 7); // Връщане към нормален радиус
-      circle.setAttribute("fill", point.country ? (checkCountryOwnership(point) === 1 ? players[1].color : (checkCountryOwnership(point) === 2 ? players[2].color : players[3].color)) : "gray");
+      circle.setAttribute("fill", point.country ? (checkCountryOwnership(point) === 1 ? players[1].color : (checkCountryOwnership(point) === 2 ? players[2].color : (checkCountryOwnership(point) === 3 ? players[3].color : players[4].color))) : "gray");
       console.log(`Point ${point.id} colored ${circle.getAttribute("fill")}`);
-      ///(checkCountryOwnership(point));
+      console.log(checkCountryOwnership(point));
     }
   });
 
@@ -1216,14 +1221,14 @@ function handleCaptureChoice(pointId) {
       }
 
       pawnsOnPoints[ConqueredCapital.id].pawns += pawnsToBePlaced;
-      ///("Trqbva da se postavqt" + pawnsToBePlaced);
-      ///("atacker sega ima" + playerPawnsCount[atacker]);
+      console.log("Trqbva da se postavqt" + pawnsToBePlaced);
+      console.log("atacker sega ima" + playerPawnsCount[atacker]);
 
       let AddittionalSumThing = parseInt(playerPawnsCount[atacker]) + parseInt(pawnsToBePlaced);
-      ///("sumata" + parseInt(AddittionalSumThing));
+      console.log("sumata" + parseInt(AddittionalSumThing));
       playerPawnsCount[atacker] = parseInt(AddittionalSumThing);
 
-      ///("veche ima" + playerPawnsCount[atacker]);
+      console.log("veche ima" + playerPawnsCount[atacker]);
       updatePlayerPawnsCount();
       updatePointDisplay(ConqueredCapital.id);
       alert("Изберете " + pawnsGrrr + " пула, които да предадете!");
@@ -1288,11 +1293,11 @@ function updatePointDisplay(pointId) {
       fillColor = "yellow";
       // Use the original owner's color for text
       const originalOwner = pawnsInfoBeforeHighlight[pointId]?.owner;
-      textColor = originalOwner === 1 ? players[1].color : originalOwner === 2 ? players[2].color : players[3].color;
+      textColor = originalOwner === 1 ? players[1].color : originalOwner === 2 ? players[2].color : (originalOwner === 3 ? players[3].color : players[4].color);
       fontSize = "18"; // Increased font size from 14 to 18
       fontWeight = "bold"; // Added bold font weight
     } else {
-      fillColor = pawnsOnPoints[pointId].owner === 1 ? players[1].color : pawnsOnPoints[pointId].owner === 2 ? players[2].color : players[3].color;
+      fillColor = pawnsOnPoints[pointId].owner === 1 ? players[1].color : (pawnsOnPoints[pointId].owner === 2 ? players[2].color : (pawnsOnPoints[pointId].owner === 3 ? players[3].color : players[4].color));
       textColor = "white"; // Use white text color for player colors
       fontSize = "14"; // Default font size
       fontWeight = "normal"; // Default font weight
@@ -1319,7 +1324,7 @@ function updatePointDisplay(pointId) {
       const displayCount = pawnsOnPoints[pointId].owner === 'highlight' && pawnsInfoBeforeHighlight[pointId] ?
         pawnsInfoBeforeHighlight[pointId].pawns :
         pawnCount;
-      ///(`pawnCount: ${pawnCount} on point ${pointId}`);
+      console.log(`pawnCount: ${pawnCount} on point ${pointId}`);
       text.textContent = displayCount;
       group.appendChild(text);
     }
@@ -1337,11 +1342,13 @@ function updatePointDisplay(pointId) {
           circle.setAttribute("fill", players[2].color);
         } else if (ownership === 3){
           circle.setAttribute("fill", players[3].color);
+        }else if (ownership === 4){
+          circle.setAttribute("fill", players[4].color);
         }
+
       } else {
         circle.setAttribute("fill", "gray");
       }
-      console.log(`Point ${point.id} colored ${circle.getAttribute("fill")}`);
     }
     console.log(`Точката ${pointId} е скрита, защото няма пулове.`);
   }
@@ -1371,8 +1378,22 @@ function renderMapElements() {
     circle.setAttribute("cx", point.x);
     circle.setAttribute("cy", point.y);
     circle.setAttribute("r", point.capital ? 22 : 7); // Начален радиус
-    circle.setAttribute("fill", point.country ? (checkCountryOwnership(point) === 1 ? players[1].color : (checkCountryOwnership(point) === 2 ? players[2].color : players[3].color)) : "gray");
-    console.log(`Point ${point.id} colored ${circle.getAttribute("fill")}`);
+    if (point.country) {
+      let countryOwner = checkCountryOwnership(point);
+      if (countryOwner === 1) {
+      circle.setAttribute("fill", players[1].color);
+      } else if (countryOwner === 2) {
+      circle.setAttribute("fill", players[2].color); 
+      } else if (countryOwner === 3) {
+      circle.setAttribute("fill", players[3].color);
+      } else if (countryOwner === 4) {
+      circle.setAttribute("fill", players[4].color);
+      } else {
+        circle.setAttribute("fill", "gray");
+      }
+    } else {
+      circle.setAttribute("fill", "gray");
+    }
     circle.setAttribute("id", point.id);
     circle.style.cursor = "pointer"; // Настройка на курсора на pointer
     circle.addEventListener("click", () => selectPoint(point.id)); // Добавяне на клик събитие към точката
@@ -1404,7 +1425,7 @@ function switchTurn() {
   let playersWithZeroPawns = 0;
   let winningPlayer = 0;
 
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= 4; i++) {
     if (playerPawnsCount[i] === 0) {
       playersWithZeroPawns++;
     } else {
@@ -1413,7 +1434,7 @@ function switchTurn() {
   }
 
   // If two players have lost all pawns, the remaining player wins
-  if (playersWithZeroPawns >= 2) {
+  if (playersWithZeroPawns >= 3) {
     switch (winningPlayer) {
       case 1:
         window.location.href = "player1_win.html";
@@ -1424,12 +1445,15 @@ function switchTurn() {
       case 3:
         window.location.href = "player3_win.html";
         break;
+      case 4:
+        window.location.href = "player4_win.html";
+        break;
     }
     return;
   }
 
   // Nullify countries of players who have lost
-  for (let i = 1; i <= 3; i++) {
+  for (let i = 1; i <= 4; i++) {
     if (playerPawnsCount[i] === 0) {
       nullifyPlayerCountries(i);
     }
@@ -1442,12 +1466,12 @@ function switchTurn() {
 
   // Find next player that still has pawns
   do {
-    currentPlayer = currentPlayer === 3 ? 1 : currentPlayer + 1;
+    currentPlayer = currentPlayer === 4 ? 1 : currentPlayer + 1;
   } while (playerPawnsCount[currentPlayer] === 0);
 
   if (currentPlayer === 1) { 
-    beingAttacked = [false, false, false];
-    TheAttacker = [0, 0, 0]; // Reset attackers at the start of round
+    beingAttacked = [false, false, false, false];
+    TheAttacker = [0, 0, 0, 0]; // Reset attackers at the start of round
   }
 
   alert(`Сега е ред на ${getCurrentPlayerName()} да мести пуловете си.`);
@@ -1466,7 +1490,7 @@ function switchTurn() {
     }
   });
 
-  ///(`Проверката не се състоя, защото ${checkCapitalsOwnership(currentPlayer).underAttack} и ${isACapitalBeingAttacked} не са .`);
+  console.log(`Проверката не се състоя, защото ${checkCapitalsOwnership(currentPlayer).underAttack} и ${isACapitalBeingAttacked} не са .`);
   if (checkCapitalsOwnership(currentPlayer).underAttack && isACapitalBeingAttacked === false) {
     alert("Има противникови пулове на ваша столица, защитете я!");
     isACapitalBeingAttacked = true;
@@ -1474,6 +1498,7 @@ function switchTurn() {
     if (currentPlayer === 1) { atacker = pawnsOnPoints[theCapital.id].owner; defender = 1; }
     if (currentPlayer === 2) { atacker = pawnsOnPoints[theCapital.id].owner; defender = 2; }
     if (currentPlayer === 3) { atacker = pawnsOnPoints[theCapital.id].owner; defender = 3; }
+    if (currentPlayer === 4) { atacker = pawnsOnPoints[theCapital.id].owner; defender = 4; }
     beingAttacked[defender]=true; TheAttacker[defender]=atacker;
   }
 
@@ -1500,7 +1525,7 @@ function handleSkipCaptureOption(pointId) {
       circle.setAttribute("r", point.capital ? 22 : 7);
       circle.setAttribute("fill", point.country ?
         (checkCountryOwnership(point) === 1 ? players[1].color :
-          (checkCountryOwnership(point) === 2 ? players[2].color : players[3].color)) :
+          (checkCountryOwnership(point) === 2 ? players[2].color : (checkCountryOwnership(point) === 3 ? players[3].color : players[4].color))) :
         "gray"
       );
       console.log(`Point ${point.id} colored ${circle.getAttribute("fill")}`);
@@ -1530,7 +1555,7 @@ function handleSkipCaptureOption(pointId) {
         let playersWithPawns = 0;
         let lastPlayerWithPawns = 0;
 
-        for (let i = 1; i <= 3; i++) {
+        for (let i = 1; i <= 4; i++) {
           if (i !== defender && playerPawnsCount[i] > 0) {
             playersWithPawns++;
             lastPlayerWithPawns = i;
@@ -1566,32 +1591,53 @@ function handleSkipCaptureOption(pointId) {
 
 // Add event listener for the end placing button
 document.getElementById('endPlacingButton').addEventListener('click', function () {
-  if (players[1].remainingPawns === 0 && players[2].remainingPawns === 0 && players[3].remainingPawns === 0) {
+  if (players[1].remainingPawns === 0 && players[2].remainingPawns === 0 && players[3].remainingPawns === 0 && players[4].remainingPawns === 0) {
     alert("Разполагането на пулове приключи! Вече можете да ги местите!");
     isMovingPhase = true;
     this.style.display = 'none'; // Hide the button
     this.disabled = true; // Disable the button
   }
-  else if (players[1].remainingPawns === 0 && players[2].remainingPawns === 0 && players[3].remainingPawns !== 0) {
+  else if (players[1].remainingPawns === 0 && players[2].remainingPawns === 0 && players[3].remainingPawns !== 0 && players[4].remainingPawns === 0) {
     alert(`${playerNames[2] || 'Играч 3'}, разположете оставащите пулове!`);
   }
-  else if (players[1].remainingPawns === 0 && players[2].remainingPawns !== 0 && players[3].remainingPawns === 0) {
+  else if (players[1].remainingPawns === 0 && players[2].remainingPawns !== 0 && players[3].remainingPawns === 0 && players[4].remainingPawns === 0) {
     alert(`${playerNames[1] || 'Играч 2'}, разположете оставащите пулове!`);
   }
-  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns === 0 && players[3].remainingPawns === 0) {
+  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns === 0 && players[3].remainingPawns === 0 && players[4].remainingPawns === 0) {
     alert(`${playerNames[0] || 'Играч 1'}, разположете оставащите пулове!`);
   }
-  else if (players[1].remainingPawns === 0 && players[2].remainingPawns !== 0 && players[3].remainingPawns !== 0) {
+  else if (players[1].remainingPawns === 0 && players[2].remainingPawns !== 0 && players[3].remainingPawns !== 0 && players[4].remainingPawns === 0) {
     alert(`${playerNames[1] || 'Играч 2'} и ${playerNames[2] || 'Играч 3'}, разположете оставащите пулове!`);
   }
-  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns === 0 && players[3].remainingPawns !== 0) {
+  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns === 0 && players[3].remainingPawns !== 0 && players[4].remainingPawns === 0) {
     alert(`${playerNames[0] || 'Играч 1'} и ${playerNames[2] || 'Играч 3'}, разположете оставащите пулове!`);
   }
-  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns !== 0 && players[3].remainingPawns === 0) {
+  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns !== 0 && players[3].remainingPawns === 0 && players[4].remainingPawns === 0) {
     alert(`${playerNames[0] || 'Играч 1'} и ${playerNames[1] || 'Играч 2'}, разположете оставащите пулове!`);
   }
-  else {
+  else if (players[1].remainingPawns === 0 && players[2].remainingPawns === 0 && players[3].remainingPawns === 0 && players[4].remainingPawns !== 0) {
+    alert(`${playerNames[3] || 'Играч 4'}, разположете оставащите пулове!`);
+  }
+  else if (players[1].remainingPawns === 0 && players[2].remainingPawns === 0 && players[3].remainingPawns !== 0 && players[4].remainingPawns !== 0) {
+    alert(`${playerNames[2] || 'Играч 3'} и ${playerNames[3] || 'Играч 4'}, разположете оставащите пулове!`);
+  }
+  else if (players[1].remainingPawns === 0 && players[2].remainingPawns !== 0 && players[3].remainingPawns === 0 && players[4].remainingPawns !== 0) {
+    alert(`${playerNames[1] || 'Играч 2'} и ${playerNames[3] || 'Играч 4'}, разположете оставащите пулове!`);
+  }
+  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns === 0 && players[3].remainingPawns === 0 && players[4].remainingPawns !== 0) {
+    alert(`${playerNames[0] || 'Играч 1'} и ${playerNames[3] || 'Играч 4'}, разположете оставащите пулове!`);
+  }
+  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns !== 0 && players[3].remainingPawns !== 0 && players[4].remainingPawns === 0) {
     alert(`${playerNames[0] || 'Играч 1'}, ${playerNames[1] || 'Играч 2'} и ${playerNames[2] || 'Играч 3'}, разположете оставащите пулове!`);
+  }
+  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns !== 0 && players[3].remainingPawns === 0 && players[4].remainingPawns !== 0) {
+    alert(`${playerNames[0] || 'Играч 1'}, ${playerNames[1] || 'Играч 2'} и ${playerNames[3] || 'Играч 4'}, разположете оставащите пулове!`);
+  }
+  else if (players[1].remainingPawns !== 0 && players[2].remainingPawns === 0 && players[3].remainingPawns !== 0 && players[4].remainingPawns !== 0) {
+    alert(`${playerNames[0] || 'Играч 1'}, ${playerNames[2] || 'Играч 3'} и ${playerNames[3] || 'Играч 4'}, разположете оставащите пулове!`);
+  }
+  else {
+    alert(`${playerNames[0] || 'Играч 1'}, ${playerNames[1] || 'Играч 2'}, ${playerNames[2] || 'Играч 3'} и ${playerNames[3] || 'Играч 4'}, разположете оставащите пулове!`);
   }
 });
 
