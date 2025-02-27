@@ -1763,8 +1763,8 @@ function handlePawnSend() {
   }
 
   // Update pawn counts
-  playerPawnsCount[currentPlayer] = parseInt(playerPawnsCount[currentPlayer]) + amount;
-  playerPawnsCount[receiverIndex] = parseInt(playerPawnsCount[receiverIndex]) - amount;
+  playerPawnsCount[currentPlayer] = parseInt(playerPawnsCount[currentPlayer]) - amount;
+  playerPawnsCount[receiverIndex] = parseInt(playerPawnsCount[receiverIndex]) + amount;
   updatePlayerInfoDisplay();
   DemocraticSending = true;
   DemocraticSendingAmmount = amount;
