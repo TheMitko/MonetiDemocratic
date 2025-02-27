@@ -1705,7 +1705,8 @@ function handlePawnSend() {
       const confirmLose = confirm("Ако изпратите всички пулове, ще загубите играта. Сигурни ли сте?");
       if (confirmLose) {
           console.log(`Player ${currentPlayer} chose to lose by sending all pawns (${amount}) to Player ${receiverIndex}`);
-          window.location.href = currentPlayer === 1 ? "player2_win.html" : "player1_win.html";
+          playerPawnsCount[currentPlayer]=0;
+          switchTurn();
           return;
       } else {
           console.log(`Player ${currentPlayer} canceled sending all pawns`);
