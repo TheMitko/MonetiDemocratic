@@ -137,6 +137,7 @@ function changeCountryOwnership(country, newOwner) {
         console.log(`Point ${point.id} colored ${circle.getAttribute("fill")}`);
       }
       point.OriginalOwner = newOwner; // Update the original owner for future reference
+      players[defender].countries = players[defender].countries.filter(c => c !== country);
       players[newOwner].countries.push(country);
       console.log(`Играч ${newOwner} взе контрол над ${country}`);
     }
@@ -1452,12 +1453,12 @@ function switchTurn() {
     return;
   }
 
-  /*// Nullify countries of players who have lost
+  // Nullify countries of players who have lost
   for (let i = 1; i <= 4; i++) {
     if (playerPawnsCount[i] === 0) {
       nullifyPlayerCountries(i);
     }
-  }*/
+  }
 
   resetHighlights();
   unhighlightPointsForCapture();
