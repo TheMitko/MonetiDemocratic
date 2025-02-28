@@ -102,6 +102,8 @@ function makeConnectionsBidirectional(points) {
         point.OriginalOwner = 2; // Player 2 is the original owner
       } else if (players[3].countries.includes(point.country)) {
         point.OriginalOwner = 3; // Player 3 is the original owner
+      } else if (players[4].countries.includes(point.country)) {
+        point.OriginalOwner = 4; // Player 3 is the original owner
       } else {
         point.OriginalOwner = 0; // No original owner
       }
@@ -116,16 +118,35 @@ function logPointsData() {
 }
 
 function checkCapitalsOwnership(playerId) {
-  const opponentId = playerId === 1 ? 2 : (playerId === 2 ? 3 : 1);
+  // Log the start of the ownership check for the player
+  console.log(`Checking capitals ownership for player ${playerId}`);
+  
+  // Filter capitals originally owned by the player and log the count
   const capitals = pointsData.filter(point => point.capital && point.OriginalOwner === playerId);
+  console.log(`Found ${capitals.length} capitals originally owned by player ${playerId}`);
 
+  // Iterate through each capital
   for (const capital of capitals) {
-    if (pawnsOnPoints[capital.id].owner && pawnsOnPoints[capital.id].owner !== capital.OriginalOwner) {
-      return { underAttack: true, capital: capital }; // Има противникови пулове на първоначално ваша столица 
+    // Log the capital being checked and its country
+    console.log(`Checking capital: ${capital.id}, country: ${capital.country}`);
+    
+    // Check if there are pawns on the capital and log the details
+    if (pawnsOnPoints[capital.id].owner) {
+      console.log(`Capital ${capital.id} has pawns owned by player ${pawnsOnPoints[capital.id].owner}`);
+      
+      // Check if the pawns belong to an opponent and log if under attack
+      if (pawnsOnPoints[capital.id].owner !== capital.OriginalOwner) {
+        console.log(`Capital ${capital.id} is under attack by player ${pawnsOnPoints[capital.id].owner}`);
+        return { underAttack: true, capital: capital };
+      }
+    } else {
+      console.log(`Capital ${capital.id} has no pawns on it`);
     }
-
   }
-  return { underAttack: false, capital: null }; // Няма противникови пулове на първоначално ваша столица
+  
+  // Log if no capitals are under attack
+  console.log(`No capitals under attack for player ${playerId}`);
+  return { underAttack: false, capital: null };
 }
 
 function changeCountryOwnership(country, newOwner) {
