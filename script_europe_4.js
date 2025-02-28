@@ -1452,12 +1452,12 @@ function switchTurn() {
     return;
   }
 
-  // Nullify countries of players who have lost
+  /*// Nullify countries of players who have lost
   for (let i = 1; i <= 4; i++) {
     if (playerPawnsCount[i] === 0) {
       nullifyPlayerCountries(i);
     }
-  }
+  }*/
 
   resetHighlights();
   unhighlightPointsForCapture();
