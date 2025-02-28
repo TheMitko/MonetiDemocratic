@@ -117,6 +117,7 @@ function changeCountryOwnership(country, newOwner) {
       if (circle) {
         circle.setAttribute("fill", newOwner === 1 ? players[1].color : players[2].color);
       }
+      players[defender].countries = players[defender].countries.filter(c => c !== country);
       point.OriginalOwner = newOwner; // Update the original owner for future reference
       players[newOwner].countries.push(country);
       console.log(`Играч ${newOwner} взе контрол над ${country}`);
