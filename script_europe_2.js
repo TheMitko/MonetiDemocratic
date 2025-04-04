@@ -601,7 +601,7 @@ function movePawns(startPointId, destinationPointId) {
   }
 
   if (SkipPawns) {
-    if (pawnsOnPoints[destinationPointId].owner && pawnsOnPoints[destinationPointId].owner !== currentPlayer) {
+    if (pawnsOnPoints[destinationPointId].owner && pawnsOnPoints[destinationPointId].owner !== currentPlayer  && pawnsOnPoints[destinationPointId].pawns !== 0) {
       X = true; // Поставяне на X на true при прескачане
 
       dinamicCaptureOptions = destinationPoint.connections.filter(pointId => {
