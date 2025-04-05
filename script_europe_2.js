@@ -117,7 +117,7 @@ function changeCountryOwnership(country, newOwner) {
       if (circle) {
         circle.setAttribute("fill", newOwner === 1 ? players[1].color : players[2].color);
       }
-      players[defender].countries = players[defender].countries.filter(c => c !== country);
+      if(defender !== 0)players[defender].countries = players[defender].countries.filter(c => c !== country);
       point.OriginalOwner = newOwner; // Update the original owner for future reference
       players[newOwner].countries.push(country);
       console.log(`Играч ${newOwner} взе контрол над ${country}`);
@@ -126,7 +126,7 @@ function changeCountryOwnership(country, newOwner) {
 
   // Update the number of capitals owned
   players[newOwner].capitalsNum += 1;
-  players[defender].capitalsNum -= 1;
+  if(defender !== 0) {players[defender].capitalsNum -= 1;}
   updateCapitalsCount();
 }
 
@@ -234,39 +234,39 @@ function unhighlightPointsForCapture()
 function selectPoint(pointId) {
   if(DemocraticSending)
   {
-    if(DemocraticallySentPawns<=DemocraticSendingAmmount)
-    {
-      if (pawnsOnPoints[pointId].owner === currentPlayer && pawnsOnPoints[pointId].pawns !== 0) {
-        DemocraticallySentPawns += 1;
-        pawnsOnPoints[pointId].owner = DemocraticReciever;
-        updatePointDisplay(pointId);
-        if (DemocraticallySentPawns === DemocraticSendingAmmount) {
-          DemocraticReciever = null;
-          DemocraticSendingAmmount = 0;
-          DemocraticSending = false;
-          ignoreFirst = true;
+    ignoreFirst = true;
+    console.log("DemocraticSending is true");
+      if (pawnsOnPoints[pointId].owner === currentPlayer && pawnsOnPoints[pointId].pawns !== 0) { // Дали сме избрали точка с наши пулове
+        console.log("Selected point has current player's pawns");
+        DemocraticallySentPawns += 1; ///Изпращаме първи пул
+        console.log(`Sending pawn ${DemocraticallySentPawns}/${DemocraticSendingAmmount}`);
+        pawnsOnPoints[pointId].owner = DemocraticReciever; ///Пулът променя собственика си
+        console.log(`Point ${pointId} owner changed to ${DemocraticReciever}`);
+        updatePointDisplay(pointId); //Обновяваме визуализацията на точката
+        console.log(`Point ${pointId} display updated`);
+        if (DemocraticallySentPawns === DemocraticSendingAmmount) { //Дали сме изпратили необходимото количество пулове
+          console.log("All pawns democratically sent");
+          DemocraticReciever = null; //Нулираме получателя
+          DemocraticSendingAmmount = 0; //Нулираме необходимото количество пулове
+          DemocraticSending = false; //Спираме изпращането на пулове
+          DemocraticallySentPawns = 0; //Нулираме изпратените пулове
+          ignoreFirst = true; //Игнорираме първото кликване, защото то е фиктивно
+          console.log("DemocraticReciever set to null, DemocraticSendingAmmount set to 0, DemocraticSending set to false, ignoreFirst set to true");
           alert("Можете да продължите с хода си.");
         }
       }
-      else if (pawnsOnPoints[pointId].pawns < 1) {
+      else if (pawnsOnPoints[pointId].pawns < 1) { // Проверка дали точката има пулове
+        console.log("Selected point has no pawns");
         alert("Изберете точка, на която има пулове");
         pointId = null;
         return;
       }
-      else if (pawnsOnPoints[pointId].owner !== defender) {
+      else if (pawnsOnPoints[pointId].owner !== currentPlayer) { // Проверка дали точката e с наши пулове
+        console.log("Selected point does not have current player's pawns");
         alert("Изберете точка с ваши пулове");
         pointId = null;
         return;
       }
-    }
-    else {
-      DemocraticReciever = null;
-      DemocraticSendingAmmount = 0;
-      DemocraticSending = false;
-      alert("Можете да продължите с хода си.");
-      selectedStartPoint = null;
-      ignoreFirst = true;
-    }
   }
   if (startSentOver) {
     console.log(`startSentOver`);
@@ -496,7 +496,7 @@ function selectPoint(pointId) {
           selectedStartPoint = null;
           return;
         }
-        
+        console.log(`Преместване от ${selectedStartPoint} до ${destinationPoint}. Данни на началната точкя:`, pawnsOnPoints[selectedStartPoint], `Данни на дестинацията:`, pawnsOnPoints[destinationPoint]);
         movePawns(selectedStartPoint, destinationPoint);
         selectedStartPoint = null;
       }
@@ -596,7 +596,7 @@ function movePawns(startPointId, destinationPointId) {
     console.log(`Пулове на точка ${startPointId} бяха преместени.`);
   }
 
-  if (!pawnsOnPoints[destinationPointId]) {
+  if (pawnsOnPoints[destinationPointId] === 0) {
     pawnsOnPoints[destinationPointId] = { pawns: 0, owner: null };
   }
 
@@ -620,6 +620,7 @@ function movePawns(startPointId, destinationPointId) {
         updatePointDisplay(destinationPointId);
 
         alert("Изберете точка за кацане");
+        console.log(dinamicCaptureOptions);
 
         captureIsHappening = true;
       }
@@ -890,7 +891,6 @@ function updatePointDisplay(pointId) {
     }
     circle.setAttribute("fill", fillColor);
     circle.style.cursor = "pointer"; // Настройка на курсора на pointer
-
     group.appendChild(circle);
 
 
@@ -1005,6 +1005,20 @@ function switchTurn() {
       }
     }
   });
+
+  const capitals = pointsData.filter(point => point.capital && point.OriginalOwner === 0);
+  for (const capital of capitals) {
+    const country = capital.country;
+    if (pawnsOnPoints[capital.id].pawns > 0) {
+      const conqueror = pawnsOnPoints[capital.id].owner;
+      changeCountryOwnership(country, conqueror); // Промяна на собствеността на страната
+      //players[conqueror].capitalsNum += 1; // Увеличаване на броя на столиците на завоевателя
+      players[conqueror].countries.push(country); // Добавяне на страната към завоевателя
+      capital.OriginalOwner = conqueror; // Промяна на оригиналния собственик на столицата
+      updatePlayerInfoDisplay(); // Актуализиране на информацията за играча
+    }
+  }
+
   if (checkCapitalsOwnership(currentPlayer).underAttack && isACapitalBeingAttacked === false && defenderMoveMade === false) {
     alert("Има противникови пулове на ваша столица, защитете я!");
     isACapitalBeingAttacked = true;
@@ -1143,19 +1157,19 @@ function handlePawnSend() {
   const amount = parseInt(input.value);
   const SendPawnsPanel = document.querySelector('.pawn-sender');
   console.log("")
-  if (isNaN(amount) || amount <= 0) {
+  if (isNaN(amount) || amount <= 0) {  //Дали е число и дали е неотрицанелно
     alert("Моля въведете валиден брой пулове.");
     input.value = '';
     return;
   }
   
-  if (amount > playerPawnsCount[currentPlayer]) {
+  if (parseInt(amount) > parseInt(playerPawnsCount[currentPlayer])) { // Дали играчът не се опитва да изпрати повече пулове от наличните
     alert("Нямате достатъчно пулове за изпращане.");
     input.value = '';
     return;
   }
 
-  if (parseInt(amount) === parseInt(playerPawnsCount[currentPlayer])) {
+  if (parseInt(amount) === parseInt(playerPawnsCount[currentPlayer])) { // Дали играчът не се опитва да изпрати всичките си пулове
     const confirmLose = confirm("Ако изпратите всички пулове, ще загубите играта. Сигурни ли сте?");
     if (confirmLose) {
       window.location.href = currentPlayer === 1 ? "player2_win.html" : "player1_win.html";
@@ -1167,12 +1181,18 @@ function handlePawnSend() {
     }
   }
 
-  playerPawnsCount[currentPlayer] -= parseInt(amount);
-  playerPawnsCount[currentPlayer === 1 ? 2 : 1] = parseInt(amount) + parseInt(playerPawnsCount[currentPlayer === 1 ? 2 : 1]);
-  updatePlayerInfoDisplay();
-  DemocraticSending = true;
-  DemocraticSendingAmmount = amount;
-  DemocraticReciever = currentPlayer === 1 ? 2 : 1;
+  playerPawnsCount[currentPlayer] -= parseInt(amount); // Намаляване на пуловете на текущия играч
+  let opponent;
+  if (currentPlayer === 1) {
+    opponent = 2;
+  } else {
+    opponent = 1;
+  }
+  playerPawnsCount[opponent] = parseInt(amount) + parseInt(playerPawnsCount[opponent]); // Увеличаване на пуловете на противника
+  updatePlayerInfoDisplay(); // Актуализиране на информацията за броя пулове на играчите
+  DemocraticSending = true; // Поставяне на флага за изпращане на пулове, следва да се избере точка чрез SelectPoint
+  DemocraticSendingAmmount = amount; // Запазване на количеството пулове, които ще бъдат изпратени
+  DemocraticReciever = opponent;
   const NameCurrent=getCurrentPlayerName();
   alert(NameCurrent + " трябва да избере " + amount + " пула, които да предаде");
   SendPawnsPanel.style.display = 'none';
