@@ -158,7 +158,7 @@ function changeCountryOwnership(country, newOwner) {
         console.log(`Point ${point.id} colored ${circle.getAttribute("fill")}`);
       }
       point.OriginalOwner = newOwner; // Update the original owner for future reference
-      players[defender].countries = players[defender].countries.filter(c => c !== country);
+      if(defender !== 0) players[defender].countries = players[defender].countries.filter(c => c !== country);
       players[newOwner].countries.push(country);
       console.log(`Играч ${newOwner} взе контрол над ${country}`);
     }
@@ -166,7 +166,7 @@ function changeCountryOwnership(country, newOwner) {
 
   // Update the number of capitals owned
   players[newOwner].capitalsNum += 1;
-  players[defender].capitalsNum -= 1;
+  if(defender !== 0) {players[defender].capitalsNum -= 1;}
   updateCapitalsCount();
 }
 
@@ -331,8 +331,6 @@ function unhighlightPointsForCapture() {
 function selectPoint(pointId) {
   if(DemocraticSending)
     {
-      if(DemocraticallySentPawns<=DemocraticSendingAmmount)
-      {
         ignoreFirst = true;
         if (pawnsOnPoints[pointId].owner === currentPlayer && pawnsOnPoints[pointId].pawns !== 0) {
           DemocraticallySentPawns += 1;
@@ -342,6 +340,7 @@ function selectPoint(pointId) {
             DemocraticReciever = null;
             DemocraticSendingAmmount = 0;
             DemocraticSending = false;
+            DemocraticallySentPawns = 0;
             ignoreFirst = true;
             alert("Можете да продължите с хода си.");
           }
@@ -357,15 +356,6 @@ function selectPoint(pointId) {
           return;
         }
       }
-      else {
-        DemocraticReciever = null;
-        DemocraticSendingAmmount = 0;
-        DemocraticSending = false;
-        alert("Можете да продължите с хода си.");
-        selectedStartPoint = null;
-        ignoreFirst = true;
-      }
-    }
   if (PunishRemove) {
     if (pawnsOnPoints[pointId].owner === currentPlayer && pawnsOnPoints[pointId].pawns !== 0) {
       pawnsOnPoints[pointId].pawns -= 1;
@@ -1512,6 +1502,19 @@ function switchTurn() {
     }
   });
 
+  const capitals = pointsData.filter(point => point.capital && point.OriginalOwner === 0);
+  for (const capital of capitals) {
+    const country = capital.country;
+    if (pawnsOnPoints[capital.id].pawns > 0) {
+      const conqueror = pawnsOnPoints[capital.id].owner;
+      changeCountryOwnership(country, conqueror); // Промяна на собствеността на страната
+      //players[conqueror].capitalsNum += 1; // Увеличаване на броя на столиците на завоевателя
+      players[conqueror].countries.push(country); // Добавяне на страната към завоевателя
+      capital.OriginalOwner = conqueror; // Промяна на оригиналния собственик на столицата
+      updatePlayerInfoDisplay(); // Актуализиране на информацията за играча
+    }
+  }
+
   console.log(`Проверката не се състоя, защото ${checkCapitalsOwnership(currentPlayer).underAttack} и ${isACapitalBeingAttacked} не са .`);
   if (checkCapitalsOwnership(currentPlayer).underAttack && isACapitalBeingAttacked === false) {
     alert("Има противникови пулове на ваша столица, защитете я!");
@@ -1721,7 +1724,7 @@ function populateReceiverDropdown(currentPlayerIndex) {
   console.log(`Player Names: ${JSON.stringify(playerNames)}`);
 
   playerNames.forEach((name, index) => {
-      if (index + 1 === currentPlayerIndex) {
+      if (index + 1 === currentPlayerIndex || parseInt(playerPawnsCount[index + 1]) === 0) {
           console.log(`Skipping current player: Player ${index + 1} (${name || `Играч ${index + 1}`})`);
           return;
       }
@@ -1772,10 +1775,20 @@ function handlePawnSend() {
   if (parseInt(amount) === parseInt(playerPawnsCount[currentPlayer])) {
       const confirmLose = confirm("Ако изпратите всички пулове, ще загубите играта. Сигурни ли сте?");
       if (confirmLose) {
-          console.log(`Player ${currentPlayer} chose to lose by sending all pawns (${amount}) to Player ${receiverIndex}`);
-          playerPawnsCount[currentPlayer]=0;
-          switchTurn();
-          return;
+        console.log(`Player ${currentPlayer} chose to lose by sending all pawns (${amount}) to Player ${receiverIndex}`);
+        playerPawnsCount[currentPlayer]=0;
+        players[currentPlayer].capitalsNum = 0;
+        ///here run a cycle that transfers all of his pawns to the reciever.
+        Object.keys(pawnsOnPoints).forEach(pointId => {
+            if (pawnsOnPoints[pointId].owner === currentPlayer) {
+                pawnsOnPoints[pointId].owner = receiverIndex;
+                updatePointDisplay(pointId);
+            }
+        });
+        SendPawnsPanel.style.display = 'none';
+        updatePlayerInfoDisplay();
+        switchTurn();
+        return;
       } else {
           console.log(`Player ${currentPlayer} canceled sending all pawns`);
           input.value = '';
