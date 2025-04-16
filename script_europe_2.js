@@ -610,7 +610,8 @@ function movePawns(startPointId, destinationPointId) {
       });
 
       if (dinamicCaptureOptions.length > 0) {
-
+        oldPawnIds.push(startPointId);
+        oldPawnIds.push(destinationPointId);
         highlightConnections(destinationPointId); // Highlight connections for SkipPawns logic
 
         playerPawnsCount[pawnsOnPoints[destinationPointId].owner] -= pawnsOnPoints[destinationPointId].pawns;
