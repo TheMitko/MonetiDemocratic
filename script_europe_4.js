@@ -68,7 +68,7 @@ function highlightConnections(pointId) {
   dinamicCaptureOptions = [] // Empty the array;
   point.connections.forEach(connectionId => {
     const connectedPoint = pointsData.find(p => p.id === connectionId);
-    if (connectedPoint && connectionId !== pointId && !oldPawnIds.includes(connectionId) /* 555 */ && (pawnsOnPoints[connectionId].pawns === 0 || (pawnsOnPoints[connectionId].pawns !== 0 && pawnsOnPoints[connectionId].owner === currentPlayer))) {
+    if (connectedPoint && connectionId !== pointId && !oldPawnIds.includes(connectionId) && pawnsOnPoints[connectionId].pawns === 0) {
       dinamicCaptureOptions.push(connectionId);
       const circle = document.getElementById(connectionId);
       if (circle) {
@@ -294,7 +294,7 @@ function highlightPointsForCapture(pointId) {
         const hasEmptyLandingSpot = connectedPoint.connections.some(landingId => {
           return landingId !== pointId &&
             !oldPawnIds.includes(landingId) &&
-            (!pawnsOnPoints[landingId] || pawnsOnPoints[landingId].pawns === 0);
+            pawnsOnPoints[landingId].pawns === 0;
         });
 
         if (hasEmptyLandingSpot) {
@@ -746,11 +746,19 @@ function selectPoint(pointId) {
     point.connections.forEach(connectionId => {
       const connectedPoint = pointsData.find(p => p.id === connectionId);
       if (connectedPoint) {
-        if (pawnsOnPoints[connectionId].pawns !== 0 && pawnsOnPoints[connectionId].owner !== currentPlayer && connectionId !== pointId && connectionId !== DestinationPoint && !oldPawnIds.includes(connectionId) /* 555 */) {
+        let options =0;
+        connectedPoint.connections.forEach(conectionId => { ///Дали е възможно да се кацне от тази точка
+          const connection = pointsData.find(p => p.id === conectionId);
+          if (connection && pawnsOnPoints[conectionId].pawns === 0 && conectionId !==connectionId && conectionId !== pointId && !oldPawnIds.includes(conectionId)) {
+            options = options + 1;
+          }
+        });
+        if (pawnsOnPoints[connectionId].pawns !== 0 && pawnsOnPoints[connectionId].owner !== currentPlayer && connectionId!==pointId && connectionId !== DestinationPoint && !oldPawnIds.includes(connectionId) && options > 0) {
           doubleSkipPossibility = true;
-
+          
           console.log(connectionId + "e опция за прескачане");
         }
+        options = 0;
       }
     });
 
@@ -1001,7 +1009,7 @@ function movePawns(startPointId, destinationPointId) {
       X=true;
       dinamicCaptureOptions = destinationPoint.connections.filter(pointId => {
         const point = pointsData.find(p => p.id === pointId);
-        return point && (!pawnsOnPoints[pointId] || pawnsOnPoints[pointId].pawns === 0);
+        return point && pawnsOnPoints[pointId] && pawnsOnPoints[pointId].pawns === 0;
       });
 
       if (dinamicCaptureOptions.length > 0) {
