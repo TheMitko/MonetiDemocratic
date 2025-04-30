@@ -981,11 +981,13 @@ function movePawns(startPointId, destinationPointId) {
   if (SkipPawns && !bannedPlayers[currentPlayer]) {
     if (pawnsOnPoints[destinationPointId].owner && pawnsOnPoints[destinationPointId].owner !== currentPlayer && pawnsOnPoints[destinationPointId].pawns !== 0) {
       X=true;
-      dinamicCaptureOptions = destinationPoint.connections.filter(pointId => {
-        const point = pointsData.find(p => p.id === pointId);
-        return point && pawnsOnPoints[pointId] && pawnsOnPoints[pointId].pawns === 0;
-      });
 
+      dinamicCaptureOptions = [];
+      destinationPoint.connections.forEach(connectionId => {
+        if (pawnsOnPoints[connectionId].pawns === 0 && connectionId !== startPointId && connectionId !== destinationPointId) {
+          dinamicCaptureOptions.push(connectionId);
+        }
+      });
       if (dinamicCaptureOptions.length > 0) {
         oldPawnIds.push(startPointId);
         highlightConnections(destinationPointId); // Highlight connections for SkipPawns logic
