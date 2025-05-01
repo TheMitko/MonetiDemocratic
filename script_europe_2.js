@@ -673,10 +673,13 @@ function movePawns(startPointId, destinationPointId) {
       X = true; // Поставяне на X на true при прескачане
 
       // Логика за прескачане и улавяне
-      captureOptions = destinationPoint.connections.filter(pointId => {
-        const point = pointsData.find(p => p.id === pointId);
-        return point && (!pawnsOnPoints[pointId] || pawnsOnPoints[pointId].pawns === 0);
+      captureOptions = [];
+      destinationPoint.connections.forEach(connectionId => {
+        if (pawnsOnPoints[connectionId].pawns === 0 && connectionId !== startPointId && connectionId !== destinationPointId) {
+          captureOptions.push(connectionId);
+        }
       });
+
 
       if (captureOptions.length > 0) {
         captureOptions = captureOptions.map(pointId => pointId);
